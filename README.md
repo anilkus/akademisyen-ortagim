@@ -98,7 +98,7 @@ Pure HTML, CSS and vanilla JavaScript. Zero external library dependencies (Googl
 
 <div align="center">
 
-Yapıldı 🇹🇷 · MIT Lisansı · Katkılarınız açık
+
 
 *Made in Turkey · MIT License · Contributions welcome*
 
