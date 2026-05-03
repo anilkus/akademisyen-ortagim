@@ -10,6 +10,87 @@ let curIdx        = null;
 let curTpl        = 'tubitak';
 let acceptedIds   = new Set();
 let inboxPerson   = null;
+let userCity      = null; // kullanıcının seçtiği şehir
+
+// Türkiye şehir koordinatları (SVG viewBox 680x270)
+const CITY_COORDS = {
+  'İstanbul':   { cx: 197, cy: 165 },
+  'Ankara':     { cx: 310, cy: 142 },
+  'İzmir':      { cx: 138, cy: 162 },
+  'Bursa':      { cx: 220, cy: 148 },
+  'Antalya':    { cx: 268, cy: 210 },
+  'Adana':      { cx: 368, cy: 205 },
+  'Konya':      { cx: 330, cy: 185 },
+  'Gaziantep':  { cx: 408, cy: 210 },
+  'Kayseri':    { cx: 378, cy: 168 },
+  'Samsun':     { cx: 380, cy: 118 },
+  'Trabzon':    { cx: 430, cy: 112 },
+  'Erzurum':    { cx: 488, cy: 130 },
+  'Eskişehir':  { cx: 258, cy: 152 },
+  'Diyarbakır': { cx: 458, cy: 188 },
+  'Mersin':     { cx: 330, cy: 215 },
+  'Kocaeli':    { cx: 218, cy: 155 },
+  'Sakarya':    { cx: 232, cy: 150 },
+  'Denizli':    { cx: 200, cy: 188 },
+  'Hatay':      { cx: 390, cy: 220 },
+  'Malatya':    { cx: 430, cy: 168 },
+  'Manisa':     { cx: 155, cy: 172 },
+  'Sivas':      { cx: 408, cy: 148 },
+  'Van':        { cx: 532, cy: 162 },
+  'Yozgat':    { cx: 358, cy: 148 },
+  'Elazığ':     { cx: 448, cy: 168 },
+  'Zonguldak':  { cx: 282, cy: 118 },
+  'Ordu':       { cx: 405, cy: 115 },
+  'Giresun':    { cx: 418, cy: 112 },
+  'Rize':       { cx: 448, cy: 108 },
+  'Muğla':      { cx: 192, cy: 205 },
+  'Tekirdağ':   { cx: 178, cy: 152 },
+  'Balıkesir':  { cx: 178, cy: 165 },
+  'Çanakkale':  { cx: 158, cy: 155 },
+  'Edirne':     { cx: 162, cy: 138 },
+  'Kastamonu':  { cx: 318, cy: 118 },
+  'Amasya':     { cx: 368, cy: 125 },
+  'Tokat':      { cx: 390, cy: 132 },
+  'Çorum':      { cx: 350, cy: 128 },
+  'Sinop':      { cx: 338, cy: 108 },
+  'Bartın':     { cx: 292, cy: 112 },
+  'Karabük':    { cx: 298, cy: 120 },
+  'Bolu':       { cx: 268, cy: 138 },
+  'Düzce':      { cx: 248, cy: 140 },
+  'Kırıkkale':  { cx: 328, cy: 145 },
+  'Nevşehir':   { cx: 358, cy: 172 },
+  'Niğde':      { cx: 348, cy: 185 },
+  'Aksaray':    { cx: 330, cy: 178 },
+  'Karaman':    { cx: 318, cy: 198 },
+  'Isparta':    { cx: 248, cy: 195 },
+  'Burdur':     { cx: 235, cy: 200 },
+  'Afyon':      { cx: 232, cy: 178 },
+  'Kütahya':    { cx: 222, cy: 165 },
+  'Uşak':       { cx: 205, cy: 178 },
+  'Aydın':      { cx: 168, cy: 192 },
+  'Muş':        { cx: 498, cy: 162 },
+  'Bitlis':     { cx: 502, cy: 170 },
+  'Siirt':      { cx: 488, cy: 182 },
+  'Batman':     { cx: 472, cy: 182 },
+  'Mardin':     { cx: 460, cy: 195 },
+  'Şanlıurfa':  { cx: 428, cy: 200 },
+  'Adıyaman':   { cx: 420, cy: 192 },
+  'Kahramanmaraş':{ cx: 395, cy: 192 },
+  'Osmaniye':   { cx: 380, cy: 210 },
+  'Kilis':      { cx: 400, cy: 215 },
+  'Şırnak':     { cx: 500, cy: 192 },
+  'Hakkari':    { cx: 528, cy: 182 },
+  'Ağrı':       { cx: 518, cy: 145 },
+  'Iğdır':      { cx: 540, cy: 140 },
+  'Kars':       { cx: 528, cy: 128 },
+  'Ardahan':    { cx: 518, cy: 115 },
+  'Artvin':     { cx: 468, cy: 105 },
+  'Bayburt':    { cx: 450, cy: 118 },
+  'Gümüşhane':  { cx: 440, cy: 120 },
+  'Bingöl':     { cx: 468, cy: 158 },
+  'Tunceli':    { cx: 455, cy: 158 },
+  'Erzincan':   { cx: 448, cy: 140 },
+};
 
 // ── Page navigation ─────────────────────
 function gp(p) {
@@ -30,12 +111,11 @@ function toggleMenu() {
 function toggleMethod(m) {
   const el = document.getElementById('um-' + m);
 
-  // If already selected → deselect
   if (activeMethods.has(m)) {
     activeMethods.delete(m);
     el.classList.remove('done');
     el.querySelector('.um-txt').style.color = '';
-    const originals = { cv: 'PDF / DOCX', li: 'Profil linki', sc: 'Author ID', or: '0000-xxxx', gh: 'Kullanıcı adı' };
+    const originals = { cv:'PDF / DOCX', li:'Profil linki', sc:'Author ID', or:'0000-xxxx', gh:'Kullanıcı adı' };
     const sub = el.querySelector('.um-sub');
     sub.textContent = originals[m];
     sub.style.color = '';
@@ -43,36 +123,21 @@ function toggleMethod(m) {
     return;
   }
 
-  // Prompt for input
-  const labels = {
-    cv:  null,
-    li:  'LinkedIn profil linkinizi girin:',
-    sc:  'Scopus Author ID\'nizi girin:',
-    or:  'ORCID numaranızı girin (0000-xxxx-xxxx-xxxx):',
-    gh:  'GitHub kullanıcı adınızı girin:'
-  };
-  const defaults = {
-    cv:  null,
-    li:  'https://linkedin.com/in/kullanici-adi',
-    sc:  '12345678900',
-    or:  '0000-0001-2345-6789',
-    gh:  'kullanici-adi'
-  };
+  const labels   = { cv:null, li:'LinkedIn profil linkinizi girin:', sc:'Scopus Author ID\'nizi girin:', or:'ORCID numaranızı girin (0000-xxxx-xxxx-xxxx):', gh:'GitHub kullanıcı adınızı girin:' };
+  const defaults = { cv:null, li:'https://linkedin.com/in/kullanici-adi', sc:'12345678900', or:'0000-0001-2345-6789', gh:'kullanici-adi' };
 
   let value;
   if (m === 'cv') {
-    // Simulate file picker
     value = 'ozgecmis.pdf';
   } else {
     value = window.prompt(labels[m], defaults[m]);
-    if (value === null || !value.trim()) return; // cancelled
+    if (value === null || !value.trim()) return;
     value = value.trim();
   }
 
   activeMethods.add(m);
   el.classList.add('done');
   el.querySelector('.um-txt').style.color = 'var(--teal3)';
-
   const sub = el.querySelector('.um-sub');
   const short = value.length > 22 ? value.slice(0, 20) + '…' : value;
   sub.textContent = '✓ ' + short;
@@ -81,14 +146,58 @@ function toggleMethod(m) {
   document.getElementById('btn-match').style.display = 'block';
 }
 
+// ── City picker modal ───────────────────
+function showCityPicker() {
+  // Build modal HTML
+  const cities = Object.keys(CITY_COORDS).sort((a,b) => a.localeCompare(b,'tr'));
+  const opts = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'city-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:600;padding:20px;';
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--w3);border-radius:4px;width:100%;max-width:380px;padding:24px;">
+      <div style="font-family:Cormorant Garamond,serif;font-size:20px;font-weight:700;color:var(--tx);margin-bottom:8px;">Konumunuz nerede?</div>
+      <p style="font-size:12px;color:var(--tx2);margin-bottom:18px;line-height:1.6;">Haritada doğru noktada görünmek için bulunduğunuz şehri veya üniversite şehrini seçin.</p>
+      <label style="font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--tx3);display:block;margin-bottom:5px;">Şehir</label>
+      <select id="city-sel" style="width:100%;background:var(--bg);border:1px solid var(--w2);border-radius:2px;padding:8px 10px;color:var(--tx);font-family:DM Sans,sans-serif;font-size:13px;outline:none;margin-bottom:16px;">
+        <option value="">— Şehir seçin —</option>
+        ${opts}
+      </select>
+      <div style="display:flex;gap:8px;">
+        <button onclick="confirmCity()" style="flex:1;padding:10px;background:var(--gold);color:#1a1500;border:none;border-radius:2px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Onayla →</button>
+        <button onclick="document.getElementById('city-overlay').remove()" style="padding:10px 14px;background:transparent;color:var(--tx2);border:1px solid var(--w2);border-radius:2px;font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;">İptal</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+}
+
+function confirmCity() {
+  const sel = document.getElementById('city-sel');
+  const city = sel.value;
+  if (!city) { alert('Lütfen bir şehir seçin.'); return; }
+  userCity = city;
+  document.getElementById('city-overlay').remove();
+  doRunMatch();
+}
+
 // ── Run match ──────────────────────────
 function runMatch() {
   if (matchRun) return;
   if (activeMethods.size === 0) return;
+  // Show city picker first
+  showCityPicker();
+}
 
+function doRunMatch() {
   matchRun = true;
   const btn = document.getElementById('btn-match');
   btn.disabled = true;
+
+  // Update "you" node on map to selected city
+  updateYouNode();
 
   const steps = [
     'Profil analiz ediliyor…',
@@ -97,7 +206,6 @@ function runMatch() {
     'Uyum skorları hesaplanıyor…',
     'Eşleşmeler bulundu ✓'
   ];
-
   let s = 0;
   btn.textContent = steps[0];
 
@@ -117,6 +225,25 @@ function runMatch() {
   }, 650);
 }
 
+// ── Update "you" node position ──────────
+function updateYouNode() {
+  if (!userCity || !CITY_COORDS[userCity]) return;
+  const { cx, cy } = CITY_COORDS[userCity];
+
+  const youGroup = document.getElementById('map-you');
+  if (!youGroup) return;
+
+  youGroup.innerHTML = `
+    <circle class="pulse-ring" cx="${cx}" cy="${cy}" r="22"/>
+    <circle cx="${cx}" cy="${cy}" r="9" fill="#c9a84c" opacity=".9"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="#f5e4b0"/>
+    <text x="${cx}" y="${cy + 18}" class="map-lbl">${userCity}</text>
+  `;
+
+  // Also update legend dot
+  const legCirc = document.querySelector('#map-svg circle[fill="#c9a84c"]:not(.pulse-ring)');
+}
+
 // ── Draw map nodes & lines ──────────────
 function drawMap() {
   const nl = document.getElementById('map-lines');
@@ -124,12 +251,13 @@ function drawMap() {
   nl.innerHTML = '';
   nn.innerHTML = '';
 
+  const coord = (userCity && CITY_COORDS[userCity]) ? CITY_COORDS[userCity] : { cx: 197, cy: 165 };
   const cities = ['Ankara', 'İzmir', 'Trabzon', 'Erzurum', 'Konya'];
 
   PEOPLE.forEach((p, i) => {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', 197); line.setAttribute('y1', 165);
-    line.setAttribute('x2', p.cx); line.setAttribute('y2', p.cy);
+    line.setAttribute('x1', coord.cx); line.setAttribute('y1', coord.cy);
+    line.setAttribute('x2', p.cx);     line.setAttribute('y2', p.cy);
     line.style.stroke = p.col;
     line.style.opacity = '.42';
     line.setAttribute('stroke-width', '1');
@@ -144,7 +272,7 @@ function drawMap() {
 
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circle.setAttribute('cx', p.cx); circle.setAttribute('cy', p.cy);
-    circle.setAttribute('r', '8'); circle.setAttribute('fill', p.col); circle.setAttribute('opacity', '.88');
+    circle.setAttribute('r', '8');   circle.setAttribute('fill', p.col); circle.setAttribute('opacity', '.88');
 
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     dot.setAttribute('cx', p.cx); dot.setAttribute('cy', p.cy);
@@ -165,8 +293,8 @@ function drawMap() {
 function triggerDiamond() {
   const layer = document.getElementById('dmnd-layer');
   layer.innerHTML = '';
-
-  const positions = [{ x: 197, y: 165 }, ...PEOPLE.map(p => ({ x: p.cx, y: p.cy }))];
+  const coord = (userCity && CITY_COORDS[userCity]) ? CITY_COORDS[userCity] : { cx: 197, cy: 165 };
+  const positions = [{ x: coord.cx, y: coord.cy }, ...PEOPLE.map(p => ({ x: p.cx, y: p.cy }))];
   const colors = ['#c9a84c', '#8890e0', '#6dcfbf', '#f09060', '#c9a84c', '#3da090'];
 
   positions.forEach((pos, i) => {
@@ -176,8 +304,8 @@ function triggerDiamond() {
       layer.appendChild(d);
       for (let r = 0; r < 3; r++) {
         const sd = document.createElement('div');
-        const size = 5 + r * 4;
-        sd.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:${size}px;height:${size}px;background:${colors[i%colors.length]};opacity:0;animation:dmndPop ${0.6+r*0.18}s ease-out forwards;animation-delay:${r*0.07}s;`;
+        const sz = 5 + r * 4;
+        sd.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};opacity:0;animation:dmndPop ${0.6+r*0.18}s ease-out forwards;animation-delay:${r*0.07}s;`;
         layer.appendChild(sd);
       }
     }, i * 110);
@@ -270,7 +398,6 @@ function openProf(i) {
 
   const notif = document.getElementById('notif-ok');
   notif.classList.remove('on');
-
   if (acceptedIds.has(i)) {
     document.getElementById('pr-btns').style.display = 'none';
     notif.textContent = 'Eşleşildi. İşbirliği teklifini gönderebilirsiniz.';
@@ -378,7 +505,7 @@ function sendCollab() {
   suc.style.display = 'block';
 }
 
-// ── Projects page ───────────────────────
+// ── Projects ────────────────────────────
 const PBG = { tubitak:'pb-t', makale:'pb-m', sempozyum:'pb-s', diger:'pb-b' };
 const PLB = { tubitak:'TÜBİTAK', makale:'Makale', sempozyum:'Sempozyum', diger:'Diğer' };
 
@@ -409,7 +536,7 @@ function renderProjects(f) {
   });
 }
 
-// ── Universities page ───────────────────
+// ── Universities ────────────────────────
 function filterUni(q) { renderUnis(q); }
 
 function renderUnis(q) {
