@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akademisyen Ortağım — Türkiye Akademik Eşleştirme Ağı</title>
+  <meta name="description" content="Türkiye'deki akademisyenleri birbirine bağlayan akıllı eşleştirme platformu." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">
+    <div class="logo-main">Akademisyen <em>Ortağım</em></div>
+    <div class="logo-sub">Türkiye Akademik Eşleştirme Ağı</div>
+  </div>
+  <div class="nav-links">
+    <button class="nl active" id="nl-home" onclick="gp('home')">Anasayfa</button>
+    <button class="nl" id="nl-match" onclick="gp('match')">Eşleşme</button>
+    <button class="nl" id="nl-proj" onclick="gp('proj')">Projeler</button>
+    <button class="nl" id="nl-uni" onclick="gp('uni')">Üniversiteler</button>
+    <button class="nl cta" onclick="gp('match')">Profil Oluştur</button>
+  </div>
+  <button class="burger" id="burger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <button onclick="gp('home');toggleMenu()">Anasayfa</button>
+  <button onclick="gp('match');toggleMenu()">Eşleşme</button>
+  <button onclick="gp('proj');toggleMenu()">Projeler</button>
+  <button onclick="gp('uni');toggleMenu()">Üniversiteler</button>
+  <button class="mm-cta" onclick="gp('match');toggleMenu()">Profil Oluştur</button>
+</div>
+
+<main>
+
+  <!-- HOME -->
+  <div class="page on" id="pg-home">
+    <div class="hero">
+      <div class="hero-kicker">Türkiye Akademik Ağı</div>
+      <h1 class="hero-h">
+        Akademisyen <em>Ortağım</em>
+        <span>Büyük bilim, büyük ortaklıkla üretilir</span>
+      </h1>
+      <p class="hero-p">Profilini yükle — CV, LinkedIn, Scopus veya ORCID ile. Yapay zeka araştırma alanlarını analiz ederek seni en uyumlu akademisyenlerle Türkiye haritası üzerinde eşleştirir.</p>
+      <div class="hero-btns">
+        <button class="hbtn hbtn-g" onclick="gp('match')">Eşleşme Başlat</button>
+        <button class="hbtn hbtn-o" onclick="gp('proj')">Örnek Projeleri Gör</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-n">4.2K</div><div class="stat-l">Akademisyen</div></div>
+        <div class="stat"><div class="stat-n">218</div><div class="stat-l">Üniversite</div></div>
+        <div class="stat"><div class="stat-n">1.1K</div><div class="stat-l">Eşleşme</div></div>
+        <div class="stat"><div class="stat-n">340</div><div class="stat-l">Aktif Proje</div></div>
+      </div>
+      <div class="field-tags">
+        <span class="ftag ft-g">Yapay Zeka</span>
+        <span class="ftag ft-t">Biyomedikal</span>
+        <span class="ftag ft-i">Çevre Bilimleri</span>
+        <span class="ftag ft-r">Malzeme Bilimi</span>
+        <span class="ftag ft-g">Nanoteknoloji</span>
+        <span class="ftag ft-t">Sağlık Bilişimi</span>
+        <span class="ftag ft-i">Ekonometri</span>
+        <span class="ftag ft-r">Enerji Sistemleri</span>
+        <span class="ftag ft-g">Robotik</span>
+        <span class="ftag ft-t">Kuantum Hesaplama</span>
+      </div>
+    </div>
+    <section class="how-sec">
+      <div class="how-title">Nasıl Çalışır?</div>
+      <div class="how-steps">
+        <div class="how-step"><div class="hs-num">01</div><div class="hs-title">Profil Ekle</div><div class="hs-desc">CV, LinkedIn, ORCID veya Scopus'tan en az biriyle profilini oluştur.</div></div>
+        <div class="how-step"><div class="hs-num">02</div><div class="hs-title">AI Analiz Eder</div><div class="hs-desc">Yapay zeka araştırma alanlarını, yayınlarını ve hibe geçmişini analiz eder.</div></div>
+        <div class="how-step"><div class="hs-num">03</div><div class="hs-title">Haritada Eşleş</div><div class="hs-desc">Türkiye haritası üzerinde uyumlu akademisyenlerle görsel olarak eşleşirsin.</div></div>
+        <div class="how-step"><div class="hs-num">04</div><div class="hs-title">İşbirliği Başlat</div><div class="hs-desc">TÜBİTAK projesi, ortak makale veya sempozyum şablonlarıyla hemen başla.</div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MATCH -->
+  <div class="page" id="pg-match">
+    <div class="free-bar">
+      <div class="fb-txt">Ücretsiz eşleşme hakkı</div>
+      <div><span class="fb-n" id="free-n">5</span><span class="fb-sub"> / 5 kaldı</span></div>
+    </div>
+    <div class="inbox" id="inbox">
+      <div class="ib-dot"></div>
+      <div class="ib-t" id="inbox-t">Yeni bildirim</div>
+      <button class="ib-btn" onclick="openInboxCollab()">Görüntüle →</button>
+    </div>
+    <div class="up-sec">
+      <div class="up-sec-t">Profilini ekle <span class="up-hint">(en az 1 yeterli — hepsi opsiyonel)</span></div>
+      <div class="up-methods">
+        <div class="um" id="um-cv" onclick="toggleMethod('cv')">
+          <div class="um-ico">CV</div><div><div class="um-txt">CV Yükle</div><div class="um-sub">PDF / DOCX</div></div>
+        </div>
+        <div class="um" id="um-li" onclick="toggleMethod('li')">
+          <div class="um-ico">in</div><div><div class="um-txt">LinkedIn</div><div class="um-sub">Profil linki</div></div>
+        </div>
+        <div class="um" id="um-sc" onclick="toggleMethod('sc')">
+          <div class="um-ico sm">Scp</div><div><div class="um-txt">Scopus</div><div class="um-sub">Author ID</div></div>
+        </div>
+        <div class="um" id="um-or" onclick="toggleMethod('or')">
+          <div class="um-ico sm">ORC</div><div><div class="um-txt">ORCID</div><div class="um-sub">0000-xxxx</div></div>
+        </div>
+        <div class="um" id="um-gh" onclick="toggleMethod('gh')">
+          <div class="um-ico">gh</div><div><div class="um-txt">GitHub</div><div class="um-sub">Kullanıcı adı</div></div>
+        </div>
+      </div>
+      <button class="btn-match" id="btn-match" onclick="runMatch()">Eşleşmeleri Bul →</button>
+    </div>
+    <div class="map-area">
+      <div class="map-tt" id="map-tt"></div>
+      <div class="dmnd-layer" id="dmnd-layer"></div>
+      <svg id="map-svg" width="100%" viewBox="0 0 680 270">
+        <path class="turkey-path" d="M58,130 L78,108 L118,103 L158,97 L198,95 L238,97 L268,86 L308,80 L340,74 L372,72 L403,74 L434,80 L464,86 L494,95 L524,103 L550,110 L570,121 L584,137 L588,153 L583,169 L567,179 L546,184 L524,189 L502,194 L480,200 L460,210 L444,220 L428,225 L408,222 L387,219 L366,225 L344,234 L322,229 L300,219 L278,208 L257,203 L236,209 L214,215 L192,209 L170,198 L148,188 L126,182 L104,177 L82,168 L63,156 Z"/>
+        <g id="map-lines"></g>
+        <g id="map-nodes"></g>
+        <g id="map-you">
+          <circle class="pulse-ring" cx="197" cy="165" r="22"/>
+          <circle cx="197" cy="165" r="9" fill="#c9a84c" opacity=".9"/>
+          <circle cx="197" cy="165" r="4" fill="#f5e4b0"/>
+          <text x="197" y="183" class="map-lbl">İstanbul</text>
+        </g>
+        <circle cx="38" cy="244" r="4" fill="#c9a84c"/>
+        <text x="46" y="248" class="map-lbl">Siz</text>
+      </svg>
+    </div>
+    <div class="ml-sec">
+      <div class="ml-hd">
+        <div class="ml-t">Eşleşmeler</div>
+        <div class="ml-badge" id="ml-badge">Profil ekleyince başlıyor</div>
+      </div>
+      <div class="ml" id="mlist"></div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="page" id="pg-proj">
+    <div class="proj-pg">
+      <h2 class="pg-h">Tamamlanan &amp; Devam Eden Projeler</h2>
+      <p class="pg-sub">Platformdan doğan akademik işbirlikleri</p>
+      <div class="proj-filters">
+        <button class="pf on" onclick="filterProj(this,'all')">Tümü</button>
+        <button class="pf" onclick="filterProj(this,'tubitak')">TÜBİTAK</button>
+        <button class="pf" onclick="filterProj(this,'makale')">Makale</button>
+        <button class="pf" onclick="filterProj(this,'sempozyum')">Sempozyum</button>
+        <button class="pf" onclick="filterProj(this,'diger')">Diğer</button>
+      </div>
+      <div class="proj-list" id="proj-list"></div>
+    </div>
+  </div>
+
+  <!-- UNIVERSITIES -->
+  <div class="page" id="pg-uni">
+    <div class="uni-pg">
+      <h2 class="pg-h">Türkiye Üniversiteleri</h2>
+      <p class="pg-sub">218 üniversite · Akademisyen profilleri ve araştırma odakları</p>
+      <input class="uni-search" type="text" placeholder="Üniversite veya şehir ara…" oninput="filterUni(this.value)" />
+      <div class="uni-grid" id="uni-grid"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- PROFILE MODAL -->
+<div class="modal-vp" id="vp-prof" onclick="cvpif(event,'vp-prof')">
+  <div class="mbox">
+    <div class="mbh">
+      <div class="mb-ava" id="pr-ava">AK</div>
+      <div><div class="mb-ttl" id="pr-name">-</div><div class="mb-sub" id="pr-uni">-</div></div>
+      <button class="mb-cl" onclick="cvp('vp-prof')">×</button>
+    </div>
+    <div class="pr-body" id="pr-body"></div>
+    <div class="pr-btns" id="pr-btns">
+      <button class="pr-btn pr-y" onclick="acceptMatch()">Eşleşmeyi Kabul Et →</button>
+      <button class="pr-btn pr-n" onclick="cvp('vp-prof')">Geç</button>
+    </div>
+    <div class="notif-ok" id="notif-ok">Karşı tarafa bildirim gönderildi.</div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-vp" id="vp-ug" onclick="cvpif(event,'vp-ug')">
+  <div class="ug-box">
+    <div class="ug-badge">Üyelik Gerekli</div>
+    <h2 class="ug-h">Sınırsız eşleşme,<br>sınırsız işbirliği</h2>
+    <p class="ug-p">5 ücretsiz hakkını kullandın. Tüm akademisyenlere ulaşmak için üye ol.</p>
+    <div class="ug-perks">
+      <div class="ug-pk">Sınırsız profil görüntüleme</div>
+      <div class="ug-pk">TÜBİTAK, makale, sempozyum şablonları</div>
+      <div class="ug-pk">Eşleşme ve teklif bildirimleri</div>
+      <div class="ug-pk">Ortak proje takip panosu</div>
+      <div class="ug-pk">ORCID &amp; Scopus entegrasyonu</div>
+    </div>
+    <div class="ug-pr">₺299<span class="ug-yr">/yıl</span></div>
+    <div class="ug-prs">Öğrenciler ₺99 · Kurumsal fiyatlandırma mevcut</div>
+    <button class="btn-buy">Üye Ol</button>
+    <button class="btn-later" onclick="cvp('vp-ug')">Şimdi değil</button>
+  </div>
+</div>
+
+<!-- COLLAB MODAL -->
+<div class="modal-vp" id="vp-col" onclick="cvpif(event,'vp-col')">
+  <div class="col-box">
+    <div class="mbh">
+      <div class="mb-ava" id="col-ava">AK</div>
+      <div><div class="mb-ttl" id="col-ttl">İşbirliği Teklifi</div><div class="mb-sub" id="col-sub">Şablon seç, doldur, gönder</div></div>
+      <button class="mb-cl" onclick="cvp('vp-col')">×</button>
+    </div>
+    <div id="col-main">
+      <div class="tpo-row">
+        <div class="tpo-lbl">İşbirliği türü</div>
+        <div class="tpo-opts">
+          <button class="tpo on" onclick="setTpl(this,'tubitak')">TÜBİTAK</button>
+          <button class="tpo" onclick="setTpl(this,'makale')">Ortak Makale</button>
+          <button class="tpo" onclick="setTpl(this,'sempozyum')">Sempozyum</button>
+          <button class="tpo" onclick="setTpl(this,'diger')">Serbest</button>
+        </div>
+      </div>
+      <div class="cform" id="cform"></div>
+      <div class="cfoot">
+        <button class="csend" onclick="sendCollab()">Teklifi Gönder →</button>
+        <button class="ccnl" onclick="cvp('vp-col')">İptal</button>
+      </div>
+    </div>
+    <div class="suc-panel" id="col-suc"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
