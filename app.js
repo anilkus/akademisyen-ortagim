@@ -1,26 +1,23 @@
 /* ═══════════════════════════════════════
    Akademisyen Ortağım — app.js
-   Tüm uygulama mantığı burada.
    ═══════════════════════════════════════ */
 
 // ── State ──────────────────────────────
-let freeLeft     = 5;
-let matchRun     = false;
+let freeLeft      = 5;
+let matchRun      = false;
 let activeMethods = new Set();
-let curIdx       = null;
-let curTpl       = 'tubitak';
-let acceptedIds  = new Set();
-let inboxPerson  = null;
+let curIdx        = null;
+let curTpl        = 'tubitak';
+let acceptedIds   = new Set();
+let inboxPerson   = null;
 
 // ── Page navigation ─────────────────────
 function gp(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('on'));
   document.querySelectorAll('.nl:not(.cta)').forEach(el => el.classList.remove('active'));
-
   document.getElementById('pg-' + p).classList.add('on');
   const navBtn = document.getElementById('nl-' + p);
   if (navBtn) navBtn.classList.add('active');
-
   if (p === 'proj') renderProjects('all');
   if (p === 'uni')  renderUnis('');
 }
@@ -32,35 +29,92 @@ function toggleMenu() {
 // ── Profile method toggle ───────────────
 function toggleMethod(m) {
   const el = document.getElementById('um-' + m);
+
+  // If already selected → deselect
   if (activeMethods.has(m)) {
     activeMethods.delete(m);
     el.classList.remove('done');
     el.querySelector('.um-txt').style.color = '';
-  } else {
-    activeMethods.add(m);
-    el.classList.add('done');
-    el.querySelector('.um-txt').style.color = 'var(--teal3)';
+    const originals = { cv: 'PDF / DOCX', li: 'Profil linki', sc: 'Author ID', or: '0000-xxxx', gh: 'Kullanıcı adı' };
+    const sub = el.querySelector('.um-sub');
+    sub.textContent = originals[m];
+    sub.style.color = '';
+    document.getElementById('btn-match').style.display = activeMethods.size > 0 ? 'block' : 'none';
+    return;
   }
-  document.getElementById('btn-match').style.display = activeMethods.size > 0 ? 'block' : 'none';
+
+  // Prompt for input
+  const labels = {
+    cv:  null,
+    li:  'LinkedIn profil linkinizi girin:',
+    sc:  'Scopus Author ID\'nizi girin:',
+    or:  'ORCID numaranızı girin (0000-xxxx-xxxx-xxxx):',
+    gh:  'GitHub kullanıcı adınızı girin:'
+  };
+  const defaults = {
+    cv:  null,
+    li:  'https://linkedin.com/in/kullanici-adi',
+    sc:  '12345678900',
+    or:  '0000-0001-2345-6789',
+    gh:  'kullanici-adi'
+  };
+
+  let value;
+  if (m === 'cv') {
+    // Simulate file picker
+    value = 'ozgecmis.pdf';
+  } else {
+    value = window.prompt(labels[m], defaults[m]);
+    if (value === null || !value.trim()) return; // cancelled
+    value = value.trim();
+  }
+
+  activeMethods.add(m);
+  el.classList.add('done');
+  el.querySelector('.um-txt').style.color = 'var(--teal3)';
+
+  const sub = el.querySelector('.um-sub');
+  const short = value.length > 22 ? value.slice(0, 20) + '…' : value;
+  sub.textContent = '✓ ' + short;
+  sub.style.color = 'var(--teal3)';
+
+  document.getElementById('btn-match').style.display = 'block';
 }
 
 // ── Run match ──────────────────────────
 function runMatch() {
   if (matchRun) return;
-  matchRun = true;
+  if (activeMethods.size === 0) return;
 
+  matchRun = true;
   const btn = document.getElementById('btn-match');
-  btn.textContent = 'Analiz ediliyor…';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.textContent = 'Eşleşmeler bulundu ✓';
-    btn.style.background = 'var(--teal2)';
-    document.getElementById('ml-badge').textContent = PEOPLE.length + ' eşleşme bulundu';
-    drawMap();
-    buildList();
-    setTimeout(triggerDiamond, 600);
-  }, 1100);
+  const steps = [
+    'Profil analiz ediliyor…',
+    'Yayınlar taranıyor…',
+    'Araştırma alanları eşleştiriliyor…',
+    'Uyum skorları hesaplanıyor…',
+    'Eşleşmeler bulundu ✓'
+  ];
+
+  let s = 0;
+  btn.textContent = steps[0];
+
+  const iv = setInterval(() => {
+    s++;
+    if (s < steps.length - 1) {
+      btn.textContent = steps[s];
+    } else {
+      clearInterval(iv);
+      btn.textContent = steps[steps.length - 1];
+      btn.style.background = 'var(--teal2)';
+      document.getElementById('ml-badge').textContent = PEOPLE.length + ' eşleşme bulundu';
+      drawMap();
+      buildList();
+      setTimeout(triggerDiamond, 600);
+    }
+  }, 650);
 }
 
 // ── Draw map nodes & lines ──────────────
@@ -73,7 +127,6 @@ function drawMap() {
   const cities = ['Ankara', 'İzmir', 'Trabzon', 'Erzurum', 'Konya'];
 
   PEOPLE.forEach((p, i) => {
-    // Connection line
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', 197); line.setAttribute('y1', 165);
     line.setAttribute('x2', p.cx); line.setAttribute('y2', p.cy);
@@ -83,7 +136,6 @@ function drawMap() {
     line.classList.add('la');
     nl.appendChild(line);
 
-    // Node group
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.style.cursor = 'pointer';
     g.setAttribute('onclick', `openProf(${i})`);
@@ -114,40 +166,18 @@ function triggerDiamond() {
   const layer = document.getElementById('dmnd-layer');
   layer.innerHTML = '';
 
-  const positions = [
-    { x: 197, y: 165 },
-    ...PEOPLE.map(p => ({ x: p.cx, y: p.cy }))
-  ];
+  const positions = [{ x: 197, y: 165 }, ...PEOPLE.map(p => ({ x: p.cx, y: p.cy }))];
   const colors = ['#c9a84c', '#8890e0', '#6dcfbf', '#f09060', '#c9a84c', '#3da090'];
 
   positions.forEach((pos, i) => {
     setTimeout(() => {
-      // Main diamond
       const d = document.createElement('div');
-      d.style.cssText = `
-        position: absolute;
-        left: ${pos.x}px; top: ${pos.y}px;
-        width: 14px; height: 14px;
-        background: ${colors[i % colors.length]};
-        opacity: 0;
-        animation: dmndPop .9s ease-out forwards;
-        box-shadow: 0 0 12px ${colors[i % colors.length]}88;
-      `;
+      d.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:14px;height:14px;background:${colors[i%colors.length]};opacity:0;animation:dmndPop .9s ease-out forwards;box-shadow:0 0 12px ${colors[i%colors.length]}88;`;
       layer.appendChild(d);
-
-      // Satellite diamonds
       for (let r = 0; r < 3; r++) {
         const sd = document.createElement('div');
         const size = 5 + r * 4;
-        sd.style.cssText = `
-          position: absolute;
-          left: ${pos.x}px; top: ${pos.y}px;
-          width: ${size}px; height: ${size}px;
-          background: ${colors[i % colors.length]};
-          opacity: 0;
-          animation: dmndPop ${0.6 + r * 0.18}s ease-out forwards;
-          animation-delay: ${r * 0.07}s;
-        `;
+        sd.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:${size}px;height:${size}px;background:${colors[i%colors.length]};opacity:0;animation:dmndPop ${0.6+r*0.18}s ease-out forwards;animation-delay:${r*0.07}s;`;
         layer.appendChild(sd);
       }
     }, i * 110);
@@ -164,27 +194,18 @@ function buildList() {
   PEOPLE.forEach((p, i) => {
     const locked   = i >= freeLeft && !acceptedIds.has(i);
     const accepted = acceptedIds.has(i);
-
     const card = document.createElement('div');
     card.className = 'mc' + (i === 0 ? ' top' : '');
     card.style.position = 'relative';
 
-    const nameTxt = locked
-      ? `<span style="filter:blur(5px);user-select:none">${p.name}</span>`
-      : p.name;
-    const uniTxt = locked
-      ? `<span style="filter:blur(4px);user-select:none">${p.uni}</span>`
-      : p.uni;
-    const accPill = accepted
-      ? `<span class="acc-pill"><span class="acc-dot"></span>Eşleşildi</span>`
-      : '';
-
+    const nameTxt = locked ? `<span style="filter:blur(5px);user-select:none">${p.name}</span>` : p.name;
+    const uniTxt  = locked ? `<span style="filter:blur(4px);user-select:none">${p.uni}</span>`  : p.uni;
+    const accPill = accepted ? `<span class="acc-pill"><span class="acc-dot"></span>Eşleşildi</span>` : '';
     const actions = !locked ? `
       <div class="mc-acts">
         <button class="act act-y" onclick="openProf(${i})">Profili Gör</button>
         <button class="act act-o" onclick="openCollab(${i})">İşbirliği Teklif Et</button>
       </div>` : '';
-
     const lockOverlay = locked ? `
       <div class="lock-o">
         <span class="lock-t">Üye ol, profili gör</span>
@@ -199,16 +220,11 @@ function buildList() {
         <div class="mc-ts">${p.tags.map(t => `<span class="mt ${t.c}">${t.l}</span>`).join('')}</div>
         ${actions}
       </div>
-      <div class="mc-sc">
-        <div class="sc-n">${p.score}%</div>
-        <div class="sc-l">uyum</div>
-      </div>
-      ${lockOverlay}
-    `;
+      <div class="mc-sc"><div class="sc-n">${p.score}%</div><div class="sc-l">uyum</div></div>
+      ${lockOverlay}`;
     ml.appendChild(card);
   });
 
-  // Update free counter
   document.getElementById('free-n').textContent = freeLeft;
   document.getElementById('ml-badge').textContent =
     freeLeft > 0 ? `${PEOPLE.length} eşleşme · ${freeLeft} hak kaldı` : 'Ücretsiz hak tükendi';
@@ -216,7 +232,6 @@ function buildList() {
 
 // ── Map tooltip ─────────────────────────
 const mapTt = document.getElementById('map-tt');
-
 function showMapTip(e, n, u, f) {
   mapTt.innerHTML = `<div class="tt-n">${n}</div><div class="tt-u">${u}</div><div class="tt-f">${f}</div>`;
   mapTt.style.display = 'block';
@@ -251,8 +266,7 @@ function openProf(i) {
     <div class="pr-row"><div class="pr-l">Araştırma</div><div class="pr-v">${d.konu}</div></div>
     <div class="pr-row"><div class="pr-l">Yayınlar</div><div class="pr-v">${d.yayinlar.map(y => `<span class="pub-t">${y}</span>`).join('')}</div></div>
     <div class="pr-row"><div class="pr-l">Hibe</div><div class="pr-v">${d.hibe}</div></div>
-    <div class="pr-row"><div class="pr-l">ORCID</div><div class="pr-v" style="font-size:10px;color:var(--ind3)">${d.orcid}</div></div>
-  `;
+    <div class="pr-row"><div class="pr-l">ORCID</div><div class="pr-v" style="font-size:10px;color:var(--ind3)">${d.orcid}</div></div>`;
 
   const notif = document.getElementById('notif-ok');
   notif.classList.remove('on');
@@ -264,14 +278,12 @@ function openProf(i) {
   } else {
     document.getElementById('pr-btns').style.display = 'flex';
   }
-
   ovp('vp-prof');
 }
 
 // ── Accept match ────────────────────────
 function acceptMatch() {
   if (curIdx === null) return;
-
   freeLeft = Math.max(0, freeLeft - 1);
   acceptedIds.add(curIdx);
 
@@ -283,7 +295,6 @@ function acceptMatch() {
   buildList();
   triggerDiamond();
 
-  // Simulate the other side accepting after a delay
   inboxPerson = PEOPLE[curIdx];
   setTimeout(() => {
     document.getElementById('inbox-t').textContent =
@@ -306,26 +317,23 @@ function openInboxCollab() {
 // ── Open collab modal ───────────────────
 function openCollab(i) {
   if (i >= freeLeft && !acceptedIds.has(i)) { ovp('vp-ug'); return; }
-
   curIdx = i;
   const p = PEOPLE[i];
 
-  document.getElementById('col-ava').textContent  = p.ini;
-  document.getElementById('col-ava').className    = 'mb-ava ' + p.avc;
-  document.getElementById('col-ttl').textContent  = 'İşbirliği → ' + p.name;
-  document.getElementById('col-sub').textContent  = 'Şablon seç, doldur, gönder';
+  document.getElementById('col-ava').textContent = p.ini;
+  document.getElementById('col-ava').className   = 'mb-ava ' + p.avc;
+  document.getElementById('col-ttl').textContent = 'İşbirliği → ' + p.name;
+  document.getElementById('col-sub').textContent = 'Şablon seç, doldur, gönder';
 
   document.getElementById('col-main').style.display = 'block';
   const suc = document.getElementById('col-suc');
   suc.classList.remove('on');
   suc.style.display = 'none';
 
-  // Reset template selector
   document.querySelectorAll('.tpo').forEach(b => b.classList.remove('on'));
   document.querySelector('.tpo').classList.add('on');
   curTpl = 'tubitak';
   renderTpl(p);
-
   ovp('vp-col');
 }
 
@@ -355,7 +363,6 @@ function sendCollab() {
   const title = firstInput ? (firstInput.value || '(Başlık girilmedi)') : '—';
 
   document.getElementById('col-main').style.display = 'none';
-
   const suc = document.getElementById('col-suc');
   suc.innerHTML = `
     <div class="suc-ic">✓</div>
@@ -364,17 +371,16 @@ function sendCollab() {
     <div class="suc-det">
       <div class="sd-r"><div class="sd-l">Tür</div><div>${tname}</div></div>
       <div class="sd-r"><div class="sd-l">Başlık</div><div>${title}</div></div>
-      <div class="sd-r"><div class="sd-l">Tarih</div><div>${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+      <div class="sd-r"><div class="sd-l">Tarih</div><div>${new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})}</div></div>
       <div class="sd-r"><div class="sd-l">Durum</div><div style="color:var(--teal3);font-weight:600">Yanıt bekleniyor</div></div>
-    </div>
-  `;
+    </div>`;
   suc.classList.add('on');
   suc.style.display = 'block';
 }
 
 // ── Projects page ───────────────────────
-const PBG = { tubitak: 'pb-t', makale: 'pb-m', sempozyum: 'pb-s', diger: 'pb-b' };
-const PLB = { tubitak: 'TÜBİTAK', makale: 'Makale', sempozyum: 'Sempozyum', diger: 'Diğer' };
+const PBG = { tubitak:'pb-t', makale:'pb-m', sempozyum:'pb-s', diger:'pb-b' };
+const PLB = { tubitak:'TÜBİTAK', makale:'Makale', sempozyum:'Sempozyum', diger:'Diğer' };
 
 function filterProj(btn, f) {
   document.querySelectorAll('.pf').forEach(b => b.classList.remove('on'));
@@ -385,25 +391,22 @@ function filterProj(btn, f) {
 function renderProjects(f) {
   const list = document.getElementById('proj-list');
   list.innerHTML = '';
-  PROJECTS
-    .filter(p => f === 'all' || p.type === f)
-    .forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'pj';
-      card.innerHTML = `
-        <div class="pj-top">
-          <div class="pj-title">${p.title}</div>
-          <div class="pj-badge ${PBG[p.type]}">${PLB[p.type]}</div>
-        </div>
-        <div class="pj-meta">
-          <div class="pj-m">${p.uni1} <span>×</span> ${p.uni2}</div>
-          <div class="pj-m">Bütçe: <span>${p.budget}</span></div>
-          <div class="pj-m">Durum: <span>${p.status}</span></div>
-        </div>
-        <div class="pj-members">${p.members.map(m => `<span class="pmem">${m}</span>`).join('')}</div>
-      `;
-      list.appendChild(card);
-    });
+  PROJECTS.filter(p => f === 'all' || p.type === f).forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pj';
+    card.innerHTML = `
+      <div class="pj-top">
+        <div class="pj-title">${p.title}</div>
+        <div class="pj-badge ${PBG[p.type]}">${PLB[p.type]}</div>
+      </div>
+      <div class="pj-meta">
+        <div class="pj-m">${p.uni1} <span>×</span> ${p.uni2}</div>
+        <div class="pj-m">Bütçe: <span>${p.budget}</span></div>
+        <div class="pj-m">Durum: <span>${p.status}</span></div>
+      </div>
+      <div class="pj-members">${p.members.map(m => `<span class="pmem">${m}</span>`).join('')}</div>`;
+    list.appendChild(card);
+  });
 }
 
 // ── Universities page ───────────────────
@@ -413,22 +416,19 @@ function renderUnis(q) {
   const grid = document.getElementById('uni-grid');
   grid.innerHTML = '';
   const lower = q.toLowerCase();
-  UNIS
-    .filter(u => !q || u.name.toLowerCase().includes(lower) || u.city.toLowerCase().includes(lower))
-    .forEach(u => {
-      const card = document.createElement('div');
-      card.className = 'uc';
-      card.innerHTML = `
-        <div class="uc-name">${u.name}</div>
-        <div class="uc-city">${u.city}</div>
-        <div class="uc-stats">
-          <div class="uc-s">Akademisyen: <span>${u.aka.toLocaleString('tr')}</span></div>
-          <div class="uc-s">Proje: <span>${u.prj}</span></div>
-        </div>
-        <div class="uc-tags">${u.tags.map(t => `<span class="uc-tag">${t}</span>`).join('')}</div>
-      `;
-      grid.appendChild(card);
-    });
+  UNIS.filter(u => !q || u.name.toLowerCase().includes(lower) || u.city.toLowerCase().includes(lower)).forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'uc';
+    card.innerHTML = `
+      <div class="uc-name">${u.name}</div>
+      <div class="uc-city">${u.city}</div>
+      <div class="uc-stats">
+        <div class="uc-s">Akademisyen: <span>${u.aka.toLocaleString('tr')}</span></div>
+        <div class="uc-s">Proje: <span>${u.prj}</span></div>
+      </div>
+      <div class="uc-tags">${u.tags.map(t => `<span class="uc-tag">${t}</span>`).join('')}</div>`;
+    grid.appendChild(card);
+  });
 }
 
 // ── Init ────────────────────────────────
