@@ -8,7 +8,7 @@
 
 ---
 
-[Canlı Demo](https://kullaniciadin.github.io/bilimag) · [Sorun Bildir](https://github.com/kullaniciadin/bilimag/issues) · [Katkı Sağla](https://github.com/kullaniciadin/bilimag/pulls)
+[Canlı Demo](https://anilkus.github.io/bilimag) · 
 
 </div>
 
